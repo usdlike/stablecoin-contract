@@ -11,11 +11,15 @@ This project was created to allow users to exchange and buy assets in the TON De
 
 Thus this jetton represents a [standard TON jetton smart contracts](https://github.com/ton-blockchain/token-contract/tree/369ae089255edbd807eb499792a0a838c2e1b272/ft) with additional functionality:
 
-- Admin of jetton can make transfers from user's jetton wallet.
+- Added Manager role for external contract
 
-- Admin of jetton can burn user's jettons.
+- Admin can change Manager address
 
-- Admin of jetton can lock/unlock user's jetton wallet (`set_status`). If the status is not set to zero, then the user's wallet is locked, the user cannot make transfers; Admin can make transfer even if wallet locked.
+- Admin of jetton or Manager can make transfers from user's jetton wallet.
+
+- Admin of jetton or Manafer can burn user's jettons.
+
+- Admin of jetton or Manager can lock/unlock user's jetton wallet (`set_status`). If the status is not set to zero, then the user's wallet is locked, the user cannot make transfers; Admin or Manager can make transfer even if wallet locked.
 
 - Admin of jetton can change jetton-minter code and it's full data.
 
