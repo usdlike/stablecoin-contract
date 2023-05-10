@@ -9,24 +9,26 @@
 #include "jetton-utils.fc";
 
 ;; storage scheme
-;; storage#_ total_supply:Coins admin_address:MsgAddress transfer_admin_address:MsgAddress jetton_wallet_code:^Cell = Storage;
-(int, slice, slice, cell) load_data() inline {
+;; storage#_ total_supply:Coins admin_address:MsgAddress transfer_admin_address:MsgAddress manager_address:MsgAddress jetton_wallet_code:^Cell = Storage;
+(int, slice, slice, slice, cell) load_data() inline {
   slice ds = get_data().begin_parse();
   var data = (
                 ds~load_coins(), ;; total_supply
                 ds~load_msg_addr(), ;; admin_address
                 ds~load_msg_addr(), ;; transfer_admin_address
+                ds~load_msg_addr(), ;; manager_address
                 ds~load_ref()  ;; jetton_wallet_code
               );
   ds.end_parse();
   return data;
 }
 
-() save_data(int total_supply, slice admin_address, slice transfer_admin_address, cell jetton_wallet_code) impure inline {
+() save_data(int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) impure inline {
   set_data(begin_cell()
             .store_coins(total_supply)
             .store_slice(admin_address)
             .store_slice(transfer_admin_address)
+            .store_slice(manager_address)
             .store_ref(jetton_wallet_code)
            .end_cell()
     );
@@ -79,8 +81,8 @@
         }
         in_msg_body~skip_bits(64); ;; query_id
         int jetton_amount = in_msg_body~load_coins();
-        (int total_supply, slice admin_address, slice transfer_admin_address, cell jetton_wallet_code) = load_data();
-        save_data(total_supply - jetton_amount, admin_address, transfer_admin_address, jetton_wallet_code);
+        (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
+        save_data(total_supply - jetton_amount, admin_address, transfer_admin_address, manager_address, jetton_wallet_code);
         return ();
     }
     slice sender_address = cs~load_msg_addr();
@@ -93,7 +95,7 @@
     int op = in_msg_body~load_uint(32);
     int query_id = in_msg_body~load_uint(64);
 
-    (int total_supply, slice admin_address, slice transfer_admin_address, cell jetton_wallet_code) = load_data();
+    (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
 
     if (op == op::mint) {
         throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
@@ -114,7 +116,7 @@
         }
         master_msg_cs.end_parse();
         send_to_jetton_wallet(to_address, jetton_wallet_code, amount, master_msg, 1);
-        save_data(total_supply + jetton_amount, admin_address, transfer_admin_address, jetton_wallet_code);
+        save_data(total_supply + jetton_amount, admin_address, transfer_admin_address, manager_address, jetton_wallet_code);
         return ();
     }
 
@@ -124,7 +126,7 @@
         throw_unless(error::not_valid_wallet,
             equal_slices(calculate_user_jetton_wallet_address(from_address, my_address(), jetton_wallet_code), sender_address)
         );
-        save_data(total_supply - jetton_amount, admin_address, transfer_admin_address, jetton_wallet_code);
+        save_data(total_supply - jetton_amount, admin_address, transfer_admin_address, manager_address, jetton_wallet_code);
         slice response_address = in_msg_body~load_msg_addr();
         if (response_address.preload_uint(2) != 0) {
             var msg = begin_cell()
@@ -169,18 +171,26 @@
     if (op == op::change_admin) {
         throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
         slice new_admin_address = in_msg_body~load_msg_addr();
-        save_data(total_supply, admin_address, new_admin_address, jetton_wallet_code);
+        save_data(total_supply, admin_address, new_admin_address, manager_address, jetton_wallet_code);
         return ();
     }
 
     if (op == op::claim_admin) {
         throw_unless(error::not_owner, equal_slices(sender_address, transfer_admin_address));
-        save_data(total_supply, transfer_admin_address, addr_none(), jetton_wallet_code);
+        save_data(total_supply, transfer_admin_address, addr_none(), manager_address, jetton_wallet_code);
+        return ();
+    }
+
+    if (op == op::change_manager) {
+        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
+        slice new_manager_address = in_msg_body~load_msg_addr();
+        save_data(total_supply, admin_address, transfer_admin_address, new_manager_address, jetton_wallet_code);
         return ();
     }
 
     if (op == op::call_to) {  ;; can be used to lock, unlock or reedem funds
-        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
+        throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
+        ;; throw_if(error::not_owner, ~equal_slices(sender_address, manager_address));
         slice to_address = in_msg_body~load_msg_addr();
         int amount = in_msg_body~load_coins();
         cell master_msg = in_msg_body~load_ref();
@@ -237,11 +247,11 @@ cell build_content_cell() {
 }
 
 (int, int, slice, cell, cell) get_jetton_data() method_id {
-    (int total_supply, slice admin_address, slice transfer_admin_address, cell jetton_wallet_code) = load_data();
+    (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
     return (total_supply, -1, admin_address, build_content_cell(), jetton_wallet_code);
 }
 
 slice get_wallet_address(slice owner_address) method_id {
-    (int total_supply, slice admin_address, slice transfer_admin_address, cell jetton_wallet_code) = load_data();
+    (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
     return calculate_user_jetton_wallet_address(owner_address, my_address(), jetton_wallet_code);
 }
