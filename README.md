@@ -3,7 +3,7 @@
 FunC smart contracts for Stable Jetton on TON (for instance equivalent of US Dollar) issued by central entity.
 
 ## Contract audit
-Contract was [audited by Certik](https://www.certik.com/projects/the-open-network?utm_source=CoinGecko&utm_campaign=AuditByCertiKLink) and all findings have been addressed.
+This is a fork of the contract which was [audited by Certik](https://www.certik.com/projects/the-open-network?utm_source=CoinGecko&utm_campaign=AuditByCertiKLink) and all findings have been addressed. 
 
 # Targets and goals
 
@@ -17,7 +17,7 @@ Thus this jetton represents a [standard TON jetton smart contracts](https://gith
 
 - Admin of jetton or Manager can make transfers from user's jetton wallet.
 
-- Admin of jetton or Manafer can burn user's jettons.
+- Admin of jetton or Manager can burn user's jettons.
 
 - Admin of jetton or Manager can lock/unlock user's jetton wallet (`set_status`). If the status is not set to zero, then the user's wallet is locked, the user cannot make transfers; Admin or Manager can make transfer even if wallet locked.
 
