@@ -3,7 +3,8 @@
 FunC smart contracts for Stable Jetton on TON (for instance equivalent of US Dollar) issued by central entity.
 
 ## Contract audit
-This is a fork of the contract which was [audited by Certik](https://www.certik.com/projects/the-open-network?utm_source=CoinGecko&utm_campaign=AuditByCertiKLink) and all findings have been addressed. 
+This is a fork of the contract with modifications described below.
+Original contract was [audited by Certik](https://www.certik.com/projects/the-open-network?utm_source=CoinGecko&utm_campaign=AuditByCertiKLink) and all findings have been addressed. 
 
 # Targets and goals
 
