@@ -98,7 +98,7 @@
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
 
     if (op == op::mint) {
-        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
+        throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
         slice to_address = in_msg_body~load_msg_addr();
         force_chain(to_address);
         int amount = in_msg_body~load_coins();
@@ -250,6 +250,12 @@ cell build_content_cell() {
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
     return (total_supply, -1, admin_address, build_content_cell(), jetton_wallet_code);
 }
+
+(slice) get_jetton_manager() method_id {
+    (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
+    return (manager_address);
+}
+
 
 slice get_wallet_address(slice owner_address) method_id {
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
