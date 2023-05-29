@@ -189,7 +189,7 @@
     }
 
     if (op == op::call_to) {  ;; can be used to lock, unlock or reedem funds
-        throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
+        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
         ;; throw_if(error::not_owner, ~equal_slices(sender_address, manager_address));
         slice to_address = in_msg_body~load_msg_addr();
         int amount = in_msg_body~load_coins();

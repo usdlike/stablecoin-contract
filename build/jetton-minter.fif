@@ -376,34 +376,30 @@ PROGRAM{
       s1 s3 XCHG
       save_data INLINECALLDICT
     }>
-    s4 PUSH
+    s6 POP
+    s3 PUSH
     7 EQINT
     IFJMP:<{
-      s4 POP
-      s5 POP
-      s3 s2 XCPU
+      s3 POP
+      s3 s4 XCPU
       SDEQ
       73 THROWIFNOT
       s0 s2 XCHG
       LDMSGADDR
       DROP
-      s0 s3 XCHG2
-      s4 s1 s4 XCHG3
+      s4 s0 s4 XCHG3
       save_data INLINECALLDICT
     }>
-    NIP
-    s6 POP
-    s2 PUSH
+    DROP
+    s5 POP
+    OVER
     6 EQINT
     IFJMP:<{
-      s2 POP
-      s2 s4 PUXC
+      NIP
+      s0 s2 XCHG
       SDEQ
-      s2 s3 XCHG2
-      SDEQ
-      s1 s2 XCHG
-      OR
       73 THROWIFNOT
+      SWAP
       LDMSGADDR
       LDGRAMS
       LDREF
@@ -465,11 +461,10 @@ PROGRAM{
       0 PUSHINT
       send_to_jetton_wallet CALLDICT
     }>
-    NIP
-    s3 POP
+    DROP
     5 EQINT
     IFJMP:<{
-      ROT
+      SWAP
       SDEQ
       73 THROWIFNOT
       LDREF

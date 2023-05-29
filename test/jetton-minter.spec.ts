@@ -4,13 +4,13 @@ import BN from "bn.js";
 chai.use(chaiBN(BN));
 
 import * as fs from "fs";
-import { Cell, beginCell, Address, toNano, Slice } from "ton";
+import { Cell, beginCell, Address, toNano, Slice, contractAddress } from "ton";
 import { SmartContract, buildC7, SendMsgAction } from "ton-contract-executor";
 import * as minter from "../contracts/jetton-minter";
 import { internalMessage, randomAddress, setBalance, parseUri, createOffchainUriCell, parseOffchainUriCell } from "./helpers";
 
 describe("minter tests", () => {
-  let contract: SmartContract, admin: Address, manager: Address, alice: Address, bob: Address;
+  let contract: SmartContract, admin: Address, manager: Address, alice: Address, bob: Address, minterAddress: Address;
 
   beforeEach(async () => {
     admin = randomAddress("admin");
@@ -26,6 +26,19 @@ describe("minter tests", () => {
         jettonWalletCode: Cell.fromBoc(fs.readFileSync("build/jetton-wallet.cell"))[0],
       })
     );
+
+    // minterAddress = contractAddress({
+    //   workchain: 0,
+    //   initialData: minter.data({
+    //     totalSupply: new BN(0),
+    //     adminAddress: admin,
+    //     managerAddress: manager,
+    //     jettonWalletCode: Cell.fromBoc(fs.readFileSync("build/jetton-wallet.cell"))[0],
+    //   }),
+    //   initialCode: Cell.fromBoc(fs.readFileSync("build/jetton-wallet.cell"))[0],
+    // });
+
+    // console.log("Minter address: ", minterAddress..);
   });
 
   it("should mint tokens", async () => {
@@ -255,7 +268,7 @@ describe("minter tests", () => {
     expect(sendUpgradeContract.actionList[0].type).to.be.equal("set_code");
   });
 
-  it("should not send arbitrary messagge to wallets", async () => {
+  it("should not send arbitrary message to wallets", async () => {
     const sendMsgToWalletNotAdmin = await contract.sendInternalMessage(
       internalMessage({
         from: alice,
@@ -317,28 +330,5 @@ describe("minter tests", () => {
     );
 
     expect(sendMsgToWalletOk.type).to.be.equal("success");
-
-    const sendMsgToWalletOkFromManager = await contract.sendInternalMessage(
-      internalMessage({
-        from: manager,
-        value: toNano(70000000),
-        body: minter.callTo({
-          toAddress: alice,
-          amount: toNano(70000),
-          masterMsg: beginCell()
-            .storeUint(0xf8a7ea5, 32)
-            .storeUint(0, 64)
-            .storeCoins(new BN(10))
-            .storeAddress(alice)
-            .storeAddress(null)
-            .storeBit(false)
-            .storeCoins(new BN(0))
-            .storeBit(false)
-            .endCell(),
-        }),
-      })
-    );
-
-    expect(sendMsgToWalletOkFromManager.type).to.be.equal("success");
   });
 });
