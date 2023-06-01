@@ -205,22 +205,21 @@ describe("wallet tests", () => {
 
     expect(sendReceiveMint.type).to.be.equal("success");
 
-    // const sendReceive = await contract.sendInternalMessage(
-    //   internalMessage({
-    //     from: Address.parseFriendly().address,
-    //     value: toNano(70000000),
-    //     body: wallet.internalTransfer({
-    //       jettonAmount: new BN(10),
-    //       fromAddress: alice,
-    //     }),
-    //   })
-    // );
-    // console.log("3", sendReceive);
+    const sendReceive = await contract.sendInternalMessage(
+      internalMessage({
+        from: Address.parseFriendly("EQC-FptlRSR1TYvW8fTsY6ZtVuclNoSwynrRdmnJeolWdYtH").address,
+        value: toNano(70000000),
+        body: wallet.internalTransfer({
+          jettonAmount: new BN(10),
+          fromAddress: alice,
+        }),
+      })
+    );
 
-    // expect(sendReceive.type).to.be.equal("success");
+    expect(sendReceive.type).to.be.equal("success");
 
     const callStatus = await contract.invokeGetMethod("get_wallet_data", []);
     expect(callStatus.type).to.equal("success");
-    expect((callStatus.result[0] as BN).toString()).to.be.equal("10");
+    expect((callStatus.result[0] as BN).toString()).to.be.equal("20");
   });
 });

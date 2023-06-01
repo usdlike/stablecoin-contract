@@ -189,7 +189,8 @@
     }
 
     if (op == op::call_to) {  ;; can be used to lock, unlock or reedem funds
-        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
+        throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
+        ;; throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
         ;; throw_if(error::not_owner, ~equal_slices(sender_address, manager_address));
         slice to_address = in_msg_body~load_msg_addr();
         int amount = in_msg_body~load_coins();
@@ -199,6 +200,7 @@
         master_msg_cs~load_uint(64);
         ;; parse-validate messages
         if(master_op == op::transfer) {
+          throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
           master_msg_cs~load_coins();
           master_msg_cs~load_msg_addr();
           master_msg_cs~load_msg_addr();
@@ -214,6 +216,7 @@
           master_msg_cs~load_maybe_ref();
           master_msg_cs.end_parse();
         } elseif (master_op == op::set_status) {
+          throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
           master_msg_cs~load_uint(4);
           master_msg_cs.end_parse();
         } else {
