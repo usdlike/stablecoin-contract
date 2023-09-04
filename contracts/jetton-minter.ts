@@ -1,8 +1,8 @@
 import BN from "bn.js";
-import { Cell, beginCell, Address } from "ton";
+import { Cell, beginCell, Address } from "ton-core";
 import { beginMessage } from "./helpers";
 
-export function data(params: { totalSupply: BN; adminAddress: Address; managerAddress: Address; jettonWalletCode: Cell }): Cell {
+export function data(params: { totalSupply: bigint; adminAddress: Address; managerAddress: Address; jettonWalletCode: Cell }): Cell {
   return beginCell()
     .storeCoins(params.totalSupply)
     .storeAddress(params.adminAddress)
@@ -12,8 +12,8 @@ export function data(params: { totalSupply: BN; adminAddress: Address; managerAd
     .endCell();
 }
 
-export function mint(params: { toAddress: Address; gasAmount: BN; jettonAmount: BN; fromAddress?: Address; responseAddress?: Address; forwardTonAmount?: BN }): Cell {
-  return beginMessage({ op: new BN(21) })
+export function mint(params: { toAddress: Address; gasAmount: bigint; jettonAmount: bigint; fromAddress?: Address; responseAddress?: Address; forwardTonAmount?: bigint }): Cell {
+  return beginMessage({ op: 21n })
     .storeAddress(params.toAddress)
     .storeCoins(params.gasAmount)
     .storeRef(
@@ -23,48 +23,21 @@ export function mint(params: { toAddress: Address; gasAmount: BN; jettonAmount: 
         .storeCoins(params.jettonAmount)
         .storeAddress(params.fromAddress || null)
         .storeAddress(params.responseAddress || null)
-        .storeCoins(params.forwardTonAmount || new BN(0))
+        .storeCoins(params.forwardTonAmount || 0)
         .storeUint(0, 1)
         .endCell()
     )
     .endCell();
 }
 
-export function burnNotification(params: { jettonAmount: BN; fromAddress: Address; responseAddress?: Address }): Cell {
-  return beginMessage({ op: new BN(0x7bdd97de) })
-    .storeCoins(params.jettonAmount)
-    .storeAddress(params.fromAddress)
-    .storeAddress(params.responseAddress || null)
-    .endCell();
-}
-
 export function changeAdmin(params: { newAdmin: Address }): Cell {
-  return beginMessage({ op: new BN(3) })
-    .storeAddress(params.newAdmin)
-    .endCell();
+  return beginMessage({ op: 3n }).storeAddress(params.newAdmin).endCell();
 }
 
 export function claimAdmin(): Cell {
-  return beginMessage({ op: new BN(4) }).endCell();
+  return beginMessage({ op: 4n }).endCell();
 }
 
 export function changeManager(params: { newManager: Address }): Cell {
-  return beginMessage({ op: new BN(7) })
-    .storeAddress(params.newManager)
-    .endCell();
-}
-
-export function callTo(params: { toAddress: Address; amount: BN; masterMsg: Cell }): Cell {
-  return beginMessage({ op: new BN(6) })
-    .storeAddress(params.toAddress)
-    .storeCoins(params.amount)
-    .storeRef(params.masterMsg)
-    .endCell();
-}
-
-export function upgradeMinter(params: { newData: Cell; newCode: Cell }): Cell {
-  return beginMessage({ op: new BN(5) })
-    .storeRef(params.newData)
-    .storeRef(params.newCode)
-    .endCell();
+  return beginMessage({ op: 7n }).storeAddress(params.newManager).endCell();
 }

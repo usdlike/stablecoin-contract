@@ -240,10 +240,11 @@
 cell build_content_cell() {
     cell content_dict = new_dict();
 
-    content_dict~udict_set_ref(256, "uri"H, begin_cell().store_uint(0, 8).store_slice("ton-stable.ton").end_cell());
+    content_dict~udict_set_ref(256, "image"H, begin_cell().store_uint(0, 8).store_slice("https://gateway.ipfs.io/ipfs/bafybeiaq2ipy62u6mxw56iwebh26pjlv4wvunf6hvij5xfvayau6hzozue/Group%201-9.png").end_cell());
     content_dict~udict_set_ref(256, "decimals"H, begin_cell().store_uint(0, 8).store_slice("9").end_cell());
-    content_dict~udict_set_ref(256, "name"H, begin_cell().store_uint(0, 8).store_slice("Ton Stable Coin").end_cell());
-    content_dict~udict_set_ref(256, "symbol"H, begin_cell().store_uint(0, 8).store_slice("💵").end_cell());
+    content_dict~udict_set_ref(256, "name"H, begin_cell().store_uint(0, 8).store_slice("USDTest").end_cell());
+    content_dict~udict_set_ref(256, "symbol"H, begin_cell().store_uint(0, 8).store_slice("USDTest").end_cell());
+    content_dict~udict_set_ref(256, "description"H, begin_cell().store_uint(0, 8).store_slice("Community-driven stable jetton for platforms and p2p payments with support extra-currencies").end_cell());
 
     cell content = begin_cell().store_uint(0, 8).store_dict(content_dict).end_cell();
     return content;
