@@ -12,6 +12,7 @@ PROGRAM{
   DECLPROC recv_internal
   DECLPROC build_content_cell
   106029 DECLMETHOD get_jetton_data
+  118347 DECLMETHOD get_jetton_manager
   103289 DECLMETHOD get_wallet_address
   force_chain PROC:<{
     REWRITESTDADDR
@@ -74,14 +75,17 @@ PROGRAM{
     LDGRAMS
     LDMSGADDR
     LDMSGADDR
+    LDMSGADDR
     LDREF
     ENDS
   }>
   save_data PROCINLINE:<{
     NEWC
-    s0 s4 XCHG2
+    s0 s5 XCHG2
     STGRAMS
-    ROT
+    s0 s3 XCHG2
+    STSLICER
+    SWAP
     STSLICER
     SWAP
     STSLICER
@@ -157,9 +161,9 @@ PROGRAM{
       LDGRAMS
       DROP
       load_data INLINECALLDICT
-      s3 s4 XCHG2
+      s4 s5 XCHG2
       SUB
-      s2 s3 XCHG2
+      s1 s3 s4 XCHG3
       save_data INLINECALLDICT
     }>
     LDMSGADDR
@@ -179,26 +183,31 @@ PROGRAM{
     32 LDU
     64 LDU
     load_data INLINECALLDICT
-    s6 PUSH
+    s7 PUSH
     21 EQINT
     IFJMP:<{
-      s5 POP
-      s5 POP
-      s7 POP
-      s4 s6 XCPU
+      s6 POP
+      s6 POP
+      s8 POP
+      s5 s0 PUSH2
       SDEQ
+      s6 s5 XCPU
+      SDEQ
+      s1 s6 XCHG
+      OR
       73 THROWIFNOT
+      SWAP
       LDMSGADDR
       OVER
       force_chain CALLDICT
       LDGRAMS
       20000000 PUSHINT
-      s0 s7 XCHG2
+      s0 s8 XCHG2
       ADD
       s1 s(-1) PUXC
       GEQ
       72 THROWIFNOT
-      s0 s5 XCHG
+      s0 s6 XCHG
       LDREF
       DROP
       DUP
@@ -224,35 +233,35 @@ PROGRAM{
         NIP
       }>
       ENDS
-      s3 s6 s(-1) PUXC2
+      s4 s7 s(-1) PUXC2
       1 PUSHINT
       send_to_jetton_wallet CALLDICT
-      s2 s3 XCHG2
+      s0 s4 XCHG2
       ADD
-      s3 s1 s3 XCHG3
+      s4 s1 s4 XCHG3
+      s0 s3 XCHG
       save_data INLINECALLDICT
     }>
-    s6 PUSH
+    s7 PUSH
     2078119902 PUSHINT
     EQUAL
     IFJMP:<{
-      s6 POP
       s7 POP
-      s7 POP
-      SWAP
+      s8 POP
+      s8 POP
+      s0 s2 XCHG
       LDGRAMS
       LDMSGADDR
       MYADDR
-      s2 s0 s6 XC2PU
+      s2 s0 s7 XC2PU
       calculate_user_jetton_wallet_address INLINECALLDICT
-      s0 s6 XCHG2
+      s0 s7 XCHG2
       SDEQ
       74 THROWIFNOT
       SUB
-      s0 s3 XCHG
-      s5 s4 s5 XCHG3
+      s6 s3 s4 XCHG3
+      s5 s5 XCHG2
       save_data INLINECALLDICT
-      SWAP
       LDMSGADDR
       DROP
       DUP
@@ -279,12 +288,12 @@ PROGRAM{
         2DROP
       }>
     }>
-    s6 PUSH
+    s7 PUSH
     745978227 PUSHINT
     EQUAL
     IFJMP:<{
-      s6 POP
-      3 BLKDROP
+      s7 POP
+      4 BLKDROP
       s0 s4 XCHG
       10000000 PUSHINT
       ADD
@@ -336,44 +345,64 @@ PROGRAM{
       64 PUSHINT
       SENDRAWMSG
     }>
-    s5 POP
-    s7 POP
-    s7 POP
-    s3 PUSH
+    s6 POP
+    s8 POP
+    s8 POP
+    s4 PUSH
     3 EQINT
     IFJMP:<{
-      s3 POP
       s4 POP
-      s2 s4 XCPU
+      s6 POP
+      s3 s2 XCPU
       SDEQ
       73 THROWIFNOT
       s0 s2 XCHG
       LDMSGADDR
       DROP
-      s3 s0 s0 XCHG3
+      2SWAP
       save_data INLINECALLDICT
     }>
-    s3 PUSH
+    s4 PUSH
     4 EQINT
     IFJMP:<{
+      DROP
       NIP
       s2 POP
-      s4 POP
-      s1 s2 XCPU
+      s2 s4 XCPU
       SDEQ
       73 THROWIFNOT
       <b 0 2 u, b> <s PUSHSLICE
-      s0 s3 XCHG2
+      s4 s2 XCHG2
+      s1 s3 XCHG
       save_data INLINECALLDICT
     }>
-    DROP
-    s4 POP
-    OVER
+    s4 PUSH
+    7 EQINT
+    IFJMP:<{
+      s4 POP
+      s5 POP
+      s3 s2 XCPU
+      SDEQ
+      73 THROWIFNOT
+      s0 s2 XCHG
+      LDMSGADDR
+      DROP
+      s0 s3 XCHG2
+      s4 s1 s4 XCHG3
+      save_data INLINECALLDICT
+    }>
+    NIP
+    s6 POP
+    s2 PUSH
     6 EQINT
     IFJMP:<{
-      NIP
-      s0 s3 XCHG
+      s2 POP
+      s2 s4 PUSH2
       SDEQ
+      s3 s4 PUXC
+      SDEQ
+      s1 s4 XCHG
+      OR
       73 THROWIFNOT
       LDMSGADDR
       LDGRAMS
@@ -389,6 +418,10 @@ PROGRAM{
       EQUAL
       IF:<{
         NIP
+        s4 s6 XCHG2
+        SDEQ
+        73 THROWIFNOT
+        s0 s4 XCHG
         LDGRAMS
         NIP
         LDMSGADDR
@@ -412,6 +445,9 @@ PROGRAM{
         EQUAL
         IF:<{
           NIP
+          s4 POP
+          s5 POP
+          s0 s2 XCHG
           LDGRAMS
           NIP
           LDMSGADDR
@@ -423,20 +459,29 @@ PROGRAM{
           SWAP
           100 EQINT
           IF:<{
+            s4 s6 XCHG2
+            SDEQ
+            73 THROWIFNOT
+            s0 s4 XCHG
             4 LDU
             NIP
             ENDS
           }>ELSE<{
             DROP
+            s3 POP
+            s4 POP
             72 THROW
           }>
+          s1 s3 XCHG
         }>
+        s1 s3 XCHG
       }>
-      s2 s3 XCHG
+      s3 s3 XCHG2
       0 PUSHINT
       send_to_jetton_wallet CALLDICT
     }>
-    DROP
+    NIP
+    s3 POP
     5 EQINT
     IFJMP:<{
       ROT
@@ -458,10 +503,10 @@ PROGRAM{
     0 PUSHINT
     NEWC
     8 STU
-    x{746f6e2d737461626c652e746f6e} PUSHSLICE
+    x{68747470733a2f2f676174657761792e697066732e696f2f697066732f62616679626569617132697079363275366d7877353669776562683236706a6c76347776756e66366876696a357866766179617536687a6f7a75652f47726f7570253230312d392e706e67} PUSHSLICE
     STSLICER
     ENDC
-    51065135818459385347574250312853146822620586594996463797054414300406918686668 PUSHINT
+    43884663033947008978309661017057008345326326811558777475113826163084742639165 PUSHINT
     ROT
     8 PUSHPOW2
     DICTUSETREF
@@ -478,7 +523,7 @@ PROGRAM{
     0 PUSHINT
     NEWC
     8 STU
-    x{546f6e20537461626c6520436f696e} PUSHSLICE
+    x{55534454657374} PUSHSLICE
     STSLICER
     ENDC
     59089242681608890680090686026688704441792375738894456860693970539822503415433 PUSHINT
@@ -488,10 +533,20 @@ PROGRAM{
     0 PUSHINT
     NEWC
     8 STU
-    x{f09f92b5} PUSHSLICE
+    x{55534454657374} PUSHSLICE
     STSLICER
     ENDC
     82961397245523513629401799123410942652413991882008909918554405086738284660097 PUSHINT
+    ROT
+    8 PUSHPOW2
+    DICTUSETREF
+    0 PUSHINT
+    NEWC
+    8 STU
+    x{436f6d6d756e6974792d64726976656e20737461626c65206a6574746f6e20666f7220706c6174666f726d7320616e6420703270207061796d656e7473207769746820737570706f72742065787472612d63757272656e63696573} PUSHSLICE
+    STSLICER
+    ENDC
+    90922719342317012409671596374183159143637506542604000676488204638996496437508 PUSHINT
     ROT
     8 PUSHPOW2
     DICTUSETREF
@@ -503,14 +558,19 @@ PROGRAM{
   }>
   get_jetton_data PROC:<{
     load_data INLINECALLDICT
-    NIP
+    2 1 BLKDROP2
     -1 PUSHINT
     build_content_cell CALLDICT
     s3 s0 s3 XCHG3
   }>
+  get_jetton_manager PROC:<{
+    load_data INLINECALLDICT
+    s1 s4 XCHG
+    4 BLKDROP
+  }>
   get_wallet_address PROC:<{
     load_data INLINECALLDICT
-    3 1 BLKDROP2
+    4 1 BLKDROP2
     MYADDR
     SWAP
     calculate_user_jetton_wallet_address INLINECALLDICT

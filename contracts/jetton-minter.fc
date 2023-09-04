@@ -98,7 +98,7 @@
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
 
     if (op == op::mint) {
-        throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
+        throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
         slice to_address = in_msg_body~load_msg_addr();
         force_chain(to_address);
         int amount = in_msg_body~load_coins();
@@ -190,6 +190,7 @@
 
     if (op == op::call_to) {  ;; can be used to lock, unlock or reedem funds
         throw_unless(error::not_owner, (equal_slices(sender_address, admin_address) | equal_slices(sender_address, manager_address)));
+        ;; throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
         ;; throw_if(error::not_owner, ~equal_slices(sender_address, manager_address));
         slice to_address = in_msg_body~load_msg_addr();
         int amount = in_msg_body~load_coins();
@@ -199,6 +200,7 @@
         master_msg_cs~load_uint(64);
         ;; parse-validate messages
         if(master_op == op::transfer) {
+          throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
           master_msg_cs~load_coins();
           master_msg_cs~load_msg_addr();
           master_msg_cs~load_msg_addr();
@@ -214,6 +216,7 @@
           master_msg_cs~load_maybe_ref();
           master_msg_cs.end_parse();
         } elseif (master_op == op::set_status) {
+          throw_unless(error::not_owner, equal_slices(sender_address, admin_address));
           master_msg_cs~load_uint(4);
           master_msg_cs.end_parse();
         } else {
@@ -237,10 +240,11 @@
 cell build_content_cell() {
     cell content_dict = new_dict();
 
-    content_dict~udict_set_ref(256, "uri"H, begin_cell().store_uint(0, 8).store_slice("ton-stable.ton").end_cell());
+    content_dict~udict_set_ref(256, "image"H, begin_cell().store_uint(0, 8).store_slice("https://gateway.ipfs.io/ipfs/bafybeiaq2ipy62u6mxw56iwebh26pjlv4wvunf6hvij5xfvayau6hzozue/Group%201-9.png").end_cell());
     content_dict~udict_set_ref(256, "decimals"H, begin_cell().store_uint(0, 8).store_slice("9").end_cell());
-    content_dict~udict_set_ref(256, "name"H, begin_cell().store_uint(0, 8).store_slice("Ton Stable Coin").end_cell());
-    content_dict~udict_set_ref(256, "symbol"H, begin_cell().store_uint(0, 8).store_slice("💵").end_cell());
+    content_dict~udict_set_ref(256, "name"H, begin_cell().store_uint(0, 8).store_slice("USDTest").end_cell());
+    content_dict~udict_set_ref(256, "symbol"H, begin_cell().store_uint(0, 8).store_slice("USDTest").end_cell());
+    content_dict~udict_set_ref(256, "description"H, begin_cell().store_uint(0, 8).store_slice("Community-driven stable jetton for platforms and p2p payments with support extra-currencies").end_cell());
 
     cell content = begin_cell().store_uint(0, 8).store_dict(content_dict).end_cell();
     return content;
@@ -250,6 +254,12 @@ cell build_content_cell() {
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
     return (total_supply, -1, admin_address, build_content_cell(), jetton_wallet_code);
 }
+
+(slice) get_jetton_manager() method_id {
+    (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
+    return (manager_address);
+}
+
 
 slice get_wallet_address(slice owner_address) method_id {
     (int total_supply, slice admin_address, slice transfer_admin_address, slice manager_address, cell jetton_wallet_code) = load_data();
